@@ -8,33 +8,29 @@ from bs4 import BeautifulSoup
 flag = True
 hashingSubjectsToNumb = {}
 hashingSubjectKeyCount = 0
+url = "http://results.vtu.ac.in/vitaviresultcbcs2018/resultpage.php"
 while(flag):
-    print("INSERT INTO `student_marks`(`usn`, `name`, `subName1`, `sub1`, `sub1Pass`, `subName2`, `sub2`, `sub2Pass`,"
-          " `subName3`, `sub3`, `sub3Pass`, `subName4`, `sub4`, `sub4Pass`, `subName5`, `sub5`, `sub5Pass`, `subName6`,"
-          " `sub6`, `sub6Pass`, `subName7`, `sub7`, `sub7Pass`, `subName8`, `sub8`, `sub8Pass`, `subName9`, `sub9`, "
-          "`sub9Pass`) VALUES")
-    for college in ('1rn','3gf'):
+    for college in ('1rn',):
         for dept in ('IS','CS'):#,'EE','EC','CE','CH','EI','IM','TC','CS','BT','ME'):
+
+            #hashingSubjectsToNumb =   {'15MAT41': 1, '15CS42': 2, '15CS43': 3, '15CS44': 4, '15CS45': 5, '15CS46': 6, '15CSL47': 7, '15CSL48': 8, 'Subject Code': 9, '15MAT31': 10, '15CS32': 11, '15CS33': 12, '15CS34': 13, '15CS35': 14, '15CS36': 15, '15CSL37': 16, '15CSL38': 17, '15MAT21': 18, '15PCD23': 19, '15PHY12': 20, '15ELE15': 21}
+
             checkCountStu = 0
             file = open(college+dept,'a')
-            #wb = xlwt.Workbook()
-            #ws = wb.add_sheet('one')
             row = 1
             numbOfSubjects = 0
             excelfileheader = False
-            for e in range(1,200):
+            for e in range(400,450):
                 numb = e
                 col = 0
                 row += 1
                 while True:
                     try:
                         data= {
-                            'lns': str(college)+'17'+str(dept)+str(getthreedigit.digit(numb)),
-                            'token':'QUhaK05rTUdweWJ1V2VTckRsS0Ftd1Q4WWZtRnV2SjdlMlFLd2RlR1VOVVpiN3VtVFpSSmFwOTFLQ0Y2eHhZR2tuOGZVQjBlb2dyRjlZSE5VUC9nZ2c9PTo6TuoDfxaNkf+5uhJYVRT7Eg==',
+                            'lns': str(college)+'16'+str(dept)+str(getthreedigit.digit(numb)),
+                            'token':'bHFKSWRvQ2MyWGtuT2hmS1pWbDNvMVNVdTBxOFN1aGJrck5JMGRJampUanFkaEtLYmRlN0c0ME5FdUFnM0RhVzNsZStLU2J5TjM4dFJxcE1EbXl6Q0E9PTo6+8nqZWm4ShQ8dP0Ll6M2MQ==',
                             'current_url':'http://results.vtu.ac.in/vitaviresultcbcs2018/index.php'
                         }
-                        url =  "http://results.vtu.ac.in/vitaviresultcbcs2018/resultpage.php"
-                        #print(data,college)
                         source_code = requests.post(url,data=data).text
                         #print(source_code)
                         soup = BeautifulSoup(source_code,"html.parser")
@@ -49,7 +45,7 @@ while(flag):
                                 if (sub.text not in hashingSubjectsToNumb.keys()) and (sub.text != str('P -> PASS')):
                                     hashingSubjectKeyCount += 1
                                     hashingSubjectsToNumb[sub.text] = hashingSubjectKeyCount
-
+                                    print("#",hashingSubjectsToNumb)
                         #print(hashingSubjectsToNumb)
                         if(not excelfileheader):
                             excelfileheader = True
@@ -70,10 +66,6 @@ while(flag):
                         print("\n ,('", end="")
                         print(data['lns'].upper(),end="'")
                         file.write("\n"+data['lns'].upper())
-
-                        #ws.write(row,col,data['usn'].upper())
-
-
                         col += 1
                         for columns in soup.findAll('td', {'style':'padding-left:15px'}):
                             print(end=",'")
@@ -90,6 +82,8 @@ while(flag):
                         subCodeItr = 1
                         marksItr = 1
                         passItr =1
+                        resultlist = [0] * 20
+                        gradelist = [0] * 20
                         for columns in soup.findAll('div',{'class':'divTableCell'}):
                             index += 1
                             if (j ==  numbOfSubjects):
@@ -100,18 +94,29 @@ while(flag):
                                 #if str(hashingSubjectsToNumb.get(columns.text)) == 'None':
                                    # break
                                 print(",'",end="")
-                                print(str(hashingSubjectsToNumb.get(columns.text,"")),end="'")
-                                #print("ggggggggggggggggggggg",columns.text)
-                                #print("jjjjjjjjjjjjjjjj",hashingSubjectsToNumb)
+                                ind = hashingSubjectsToNumb.get(columns.text,"")
+
+                                #print(str(hashingSubjectsToNumb.get(columns.text,"")),end="'")
+                                #print(hashingSubjectsToNumb)
                                 subCodeItr += 1
                             if totalMarksStart +(marksItr -1)*6 is index:
-                                print(",'",end="")
-                                print(columns.text,end="'")
+                                #print(",'",end="")
+                                #print(columns.text,end="'")
+                                try:
+
+                                    resultlist[ind] = columns.text
+                                except:
+                                    pass
                                 marksItr += 1
                             if passingStart +(passItr -1)*6 is index:
                                 j+=1
-                                print(",'",end="")
-                                print(columns.text,end="'")
+                                #print(",'",end="")
+                                #print(columns.text,end="'")
+                                try:
+
+                                    gradelist[ind] = columns.text
+                                except:
+                                    pass
                                 passItr += 1
                             '''if not columns:
                                 print("breaking out")
@@ -141,8 +146,12 @@ while(flag):
                         if(college == '1ap' and e == 199):
                             flag = False
                         #print (source_code)'''
-
-                        while (j < 9):
+                        try:
+                            for i in range(len(gradelist)):
+                                print(resultlist[i],",",gradelist[i],",",end="")
+                        except:
+                            pass
+                        while (j < 15):
                             print(",'','',''", end="")
                             j += 1
                         print(")", end="")
@@ -167,4 +176,4 @@ while(flag):
                     break
                 #if checkCountStu > 10: #if more than 10 empty records found, consider that branch has no more students
                  #   break
-fileSub.close()
+#fileSub.close()
